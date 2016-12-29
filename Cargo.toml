@@ -1,0 +1,27 @@
+[build-dependencies]
+serde_codegen = { version = "0.8", optional = true }
+
+[dependencies]
+serde = "0.8"
+serde_macros = { version = "0.8", optional = true }
+
+[features]
+default = ["serde_codegen"]
+unstable = ["serde_macros"]
+
+[package]
+authors = ["Tyler Wolf Leonhardt <tyler.wolf.leonhardt@gmail.com>"]
+build = "build.rs"
+description = "Provides a type which can be deserialized to a number or a string."
+exclude = [
+    ".gitignore",
+    "build.gradle",
+    "gradle",
+    "gradlew",
+    "gradlew.bat",
+    "README",
+    "test/**"
+]
+license = "MIT"
+name = "number_or_string"
+version = "0.1.0"
