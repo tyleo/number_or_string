@@ -1,10 +1,7 @@
-// Inner builds
-task build_number_or_string(type: Exec) {
+// Top level tasks
+task build(type: Exec) {
     commandLine "cargo.exe", "build"
 }
-
-// Top level tasks
-task build(dependsOn: [build_number_or_string])
 
 task test(type: Exec) {
     commandLine "cargo.exe", "test"
