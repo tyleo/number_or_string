@@ -1,17 +1,9 @@
-[build-dependencies]
-serde_codegen = { version = "0.8", optional = true }
-
 [dependencies]
-serde = "0.8"
-serde_macros = { version = "0.8", optional = true }
-
-[features]
-default = ["serde_codegen"]
-unstable = ["serde_macros"]
+serde = "0.9"
+serde_derive = "0.9"
 
 [package]
 authors = ["Tyler Wolf Leonhardt <tyler.wolf.leonhardt@gmail.com>"]
-build = "build.rs"
 description = "Provides a type which can be deserialized to a number or a string."
 exclude = [
     ".gitignore",

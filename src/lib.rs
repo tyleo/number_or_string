@@ -1,19 +1,50 @@
 #![recursion_limit="200"]
 
-// Begin serde
-
-#![cfg_attr(feature = "serde_macros", feature(plugin, custom_derive))]
-
-#![cfg_attr(feature = "serde_macros", plugin(serde_macros))]
-
 extern crate serde;
 
-#[cfg(feature = "serde_macros")]
-include!("serde_types.in.rs");
+use serde::de::{ Deserialize, Deserializer, Error, Visitor };
+use serde::ser::{ Serialize, Serializer };
+use std::fmt::{ Formatter, Result as FmtResult };
 
-#[cfg(feature = "serde_codegen")]
-include!(concat!(env!("OUT_DIR"), "/serde_types.rs"));
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum NumberOrString {
+    Number(u32),
+    String(String),
+}
 
-// End serde
+impl Deserialize for NumberOrString {
+    fn deserialize<D>(deserializer: D) -> Result<NumberOrString, D::Error>
+        where D: Deserializer {
+            struct NumberOrStringVisitor;
 
-pub use serialization::*;
+            impl Visitor for NumberOrStringVisitor {
+                type Value = NumberOrString;
+
+                fn expecting(&self, formatter: &mut Formatter) -> FmtResult {
+                    formatter.write_str("A u64 or a string.")
+                }
+
+                fn visit_u32<E>(self, value: u32) -> Result<NumberOrString, E>
+                    where E: Error {
+                    Ok(NumberOrString::Number(value))
+                }
+
+                fn visit_str<E>(self, value: &str) -> Result<NumberOrString, E>
+                    where E: Error {
+                    Ok(NumberOrString::String(value.to_string()))
+                }
+            }
+
+            deserializer.deserialize(NumberOrStringVisitor)
+    }
+}
+
+impl Serialize for NumberOrString {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer {
+        match self {
+            &NumberOrString::Number(value) => serializer.serialize_u32(value),
+            &NumberOrString::String(ref value) => serializer.serialize_str(value),
+        }
+    }
+}
