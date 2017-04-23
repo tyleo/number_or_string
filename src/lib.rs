@@ -8,16 +8,16 @@ use std::fmt::{ Formatter, Result as FmtResult };
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum NumberOrString {
-    Number(u32),
+    Number(u64),
     String(String),
 }
 
-impl Deserialize for NumberOrString {
+impl <'a> Deserialize<'a> for NumberOrString {
     fn deserialize<D>(deserializer: D) -> Result<NumberOrString, D::Error>
-        where D: Deserializer {
+        where D: Deserializer<'a> {
             struct NumberOrStringVisitor;
 
-            impl Visitor for NumberOrStringVisitor {
+            impl <'b> Visitor<'b> for NumberOrStringVisitor {
                 type Value = NumberOrString;
 
                 fn expecting(&self, formatter: &mut Formatter) -> FmtResult {
@@ -25,6 +25,11 @@ impl Deserialize for NumberOrString {
                 }
 
                 fn visit_u32<E>(self, value: u32) -> Result<NumberOrString, E>
+                    where E: Error {
+                    Ok(NumberOrString::Number(value as u64))
+                }
+
+                fn visit_u64<E>(self, value: u64) -> Result<NumberOrString, E>
                     where E: Error {
                     Ok(NumberOrString::Number(value))
                 }
@@ -35,7 +40,7 @@ impl Deserialize for NumberOrString {
                 }
             }
 
-            deserializer.deserialize(NumberOrStringVisitor)
+            deserializer.deserialize_any(NumberOrStringVisitor)
     }
 }
 
@@ -43,7 +48,7 @@ impl Serialize for NumberOrString {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer {
         match self {
-            &NumberOrString::Number(value) => serializer.serialize_u32(value),
+            &NumberOrString::Number(value) => serializer.serialize_u64(value),
             &NumberOrString::String(ref value) => serializer.serialize_str(value),
         }
     }
